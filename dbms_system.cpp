@@ -1,17 +1,15 @@
 #include <bits/stdc++.h>
 #include <sstream>
-
 using namespace std;
-set<string> values;
-set<string> done;
-set<string> redo;
+set<string> values, done, redo, dataEntries;
 vector<vector<string>> v;
+map<string, vector<string>> mp;
+map<string, string> finalValue;
 
 void preprocessing()
 {
     ifstream file("log.txt");
     string line;
-
     while (getline(file, line))
     {
         line.pop_back();
@@ -33,9 +31,6 @@ void undo_redo_find()
     bool checkpoint = false;
     for (auto x : v)
     {
-        // for (auto y : x)
-        //     cout << y << " ";
-        // cout << "\n";
         if (x.size() == 2)
         {
             if (x[0] == "COMMIT")
@@ -56,19 +51,34 @@ void undo_redo_find()
         }
         else if (x.size() == 4)
         {
+            mp[x[0]] = {x[1], x[2], x[3]};
+            dataEntries.insert(x[1]);
             values.insert(x[0]);
         }
     }
-    cout << values.size();
+}
+void valueUpdate()
+{
+    for (auto x : done)
+        finalValue[mp[x][0]] = mp[x][2];
+    for (auto x : redo)
+        finalValue[mp[x][0]] = mp[x][2];
+    for (auto x : values)
+        finalValue[mp[x][0]] = mp[x][1];
 }
 int main()
 {
     preprocessing();
     undo_redo_find();
+    valueUpdate();
+
     cout << "undo: ";
     for (auto x : values)
         cout << x << " ";
     cout << "\nredo: ";
     for (auto x : redo)
         cout << x << " ";
+    cout << "\nFinal value:\n";
+    for (auto x : dataEntries)
+        cout << x << " : " << finalValue[x] << "\n";
 }

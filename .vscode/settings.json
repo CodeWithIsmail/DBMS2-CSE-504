@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "*.ejs": "html",
-        "iosfwd": "cpp"
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "coroutine": "cpp"
     }
 }
