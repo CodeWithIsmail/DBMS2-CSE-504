@@ -1,8 +1,10 @@
 {
     "files.associations": {
         "*.ejs": "html",
-        "iosfwd": "cpp",
         "iostream": "cpp",
-        "coroutine": "cpp"
-    }
+        "istream": "cpp",
+        "string": "cpp",
+        "utility": "cpp"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }
