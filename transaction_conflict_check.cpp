@@ -3,7 +3,7 @@ using namespace std;
 #define pb push_back
 
 int step;
-string fname = "transaction.txt";
+string fname = "";
 map<string, vector<string>> processList;
 map<string, set<pair<string, int>>> processTrack;
 map<string, set<string>> adjacencyList;
@@ -83,7 +83,7 @@ void topologicalSort()
     queue<string> q;
     for (auto x : processList)
     {
-        cout << x.first << " " << indegree[x.first] << "\n";
+        // cout << x.first << " " << indegree[x.first] << "\n";
         if (indegree[x.first] == 0)
             q.push(x.first);
     }
@@ -111,12 +111,37 @@ void solve()
     else
         cout << "conflict not serializable\n";
 }
+void showGraph()
+{
+    cout << "\nAdjacency list:\n";
+    for (auto x : adjacencyList)
+    {
+        cout << x.first << " : ";
+        for (auto y : x.second)
+            cout << y << " ";
+        cout << "\n";
+    }
+}
 int main()
 {
-    preProcessing();
-    graphMake();
-    topologicalSort();
-    solve();
+    string allInput[3] = {"case1.txt", "case2.txt", "case3.txt"};
+    for (int i = 0; i < 3; i++)
+    {
+        cout << "\n";
+        fname = allInput[i];
+        cout << "Test case: " << i + 1 << "\n";
+        preProcessing();
+        graphMake();
+        topologicalSort();
+        showGraph();
+        solve();
+        cout << "\n";
+        processList.clear();
+        processTrack.clear();
+        adjacencyList.clear();
+        indegree.clear();
+        topoOrder.clear();
+    }
 
     // for (auto x : processList)
     // {
@@ -133,13 +158,7 @@ int main()
     //     cout << "\n";
     // }
     // cout << "\n";
-    // for (auto x : adjacencyList)
-    // {
-    //     cout << x.first << " : ";
-    //     for (auto y : x.second)
-    //         cout << y << " ";
-    //     cout << "\n";
-    // }
+
     // for (auto x : processList)
     //     cout << x.first << " " << indegree[x.first] << "\n";
     // for (auto x : topoOrder)
