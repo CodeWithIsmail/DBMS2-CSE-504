@@ -1,11 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
-#define pb push_back
 string fname = "data1.txt";
-map<string, int> itemCount;
 map<string, set<string>> transaction;
 set<set<string>> itemPair;
+set<set<string>> previtemPair;
 int supportCount;
+int countSearch = 0;
 void inputProcess()
 {
     string line, temp;
@@ -28,52 +28,69 @@ void inputProcess()
     }
     supportCount = stoi(temp);
 }
-void printTransaction()
+set<set<string>> generateSubsets(set<string> &inputSet)
 {
-    int i;
-    for (auto x : transaction)
+    set<set<string>> subsets;
+    vector<string> elements(inputSet.begin(), inputSet.end());
+    for (int i = 0; i < elements.size(); i++)
     {
-        cout << x.first << " : ";
-        for (auto y : x.second)
+        set<string> subset;
+        for (int j = 0; j < elements.size(); ++j)
         {
-            cout << y << " ";
+            if (j != i)
+                subset.insert(elements[j]);
         }
-        cout << "\n";
+        subsets.insert(subset);
     }
+    return subsets;
 }
-
-void candidateGen()
+void printSet(const set<string> &st)
+{
+    cout << "\n";
+    for (auto y : st)
+        cout << y << " ";
+}
+void printSetSet(const set<set<string>> &st)
+{
+    for (auto x : st)
+        printSet(x);
+}
+void apriori()
 {
     int itemCount = 1;
-    while (1)
-    {
-        set<set<string>> tempItemPair;
-        for (auto x : itemPair)
-        {
-            for (auto y : x)
-                cout << y << " ";
-            cout << "\n";
-        }
 
+    while (itemPair.size())
+    {
+        // cout << "\n\nL" << itemCount;
+        set<set<string>> tempItemPair;
         for (auto x : itemPair)
         {
             for (auto y : itemPair)
             {
                 set<string> unionSet;
-
                 set_union(x.begin(), x.end(),
                           y.begin(), y.end(),
                           inserter(unionSet, unionSet.begin()));
                 if (unionSet.size() == itemCount)
                 {
-                    tempItemPair.insert({unionSet});
-                    // for (auto z : unionSet)
-                    // {
-                    //     cout << z << " ";
-
-                    // }
+                    if (itemCount == 1)
+                        tempItemPair.insert(unionSet);
+                    else
+                    {
+                        set<set<string>> allPairs = generateSubsets(unionSet);
+                        bool nibo = true;
+                        for (auto all : allPairs)
+                        {
+                            if (itemPair.find(all) == itemPair.end())
+                            {
+                                nibo = false;
+                                break;
+                            }
+                        }
+                        if (nibo)
+                            tempItemPair.insert(unionSet);
+                    }
                 }
-                // cout << "\n";
             }
         }
         itemPair.clear();
@@ -82,30 +99,24 @@ void candidateGen()
             int counter = 0;
             for (auto mainset : transaction)
             {
+                countSearch++;
                 if (includes(mainset.second.begin(), mainset.second.end(), newset.begin(), newset.end()))
                     counter++;
             }
-
             if (counter >= supportCount)
             {
                 itemPair.insert(newset);
-
-                for (auto y : newset)
-                    cout << y << " ";
-                cout << " : ";
-                cout << counter << "\n";
+                printSet(newset);
+                cout << " : " << counter;
             }
         }
-        itemCount++;
 
-        if (itemCount == 5)
-            break;
+        // printSetSet(itemPair);
+        itemCount++;
     }
 }
 int main()
 {
     inputProcess();
-    // printTransaction();
-    // c1Generate();
-    candidateGen();
+    apriori();
 }
