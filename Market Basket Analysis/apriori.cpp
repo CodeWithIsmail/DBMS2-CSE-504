@@ -3,9 +3,9 @@ using namespace std;
 string fname = "data1.txt";
 map<string, set<string>> transaction;
 set<set<string>> itemPair;
-set<set<string>> previtemPair;
 int supportCount;
 int countSearch = 0;
+
 void inputProcess()
 {
     string line, temp;
@@ -110,7 +110,6 @@ void apriori()
                 cout << " : " << counter;
             }
         }
-
         // printSetSet(itemPair);
         itemCount++;
     }
