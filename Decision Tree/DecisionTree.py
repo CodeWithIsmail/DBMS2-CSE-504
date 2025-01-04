@@ -41,12 +41,12 @@ def load_data():
     return data
 
 
-def split_data(data, attribute_index, threashold):
+def split_data(data, attribute_index, threshold):
     left = []
     right = []
     for row in data:
         value = row[0][attribute_index]
-        if value <= threashold:
+        if value <= threshold:
             left.append(row)
         else:
             right.append(row)
@@ -71,20 +71,51 @@ def calculate_entropy(data):
     return entropy
 
 
-def calculate_information_gain(data, attribute_index, threashold):
-    left, right = split_data(data, attribute_index, threashold)
+def calculate_information_gain(data, attribute_index, threshold):
+    left, right = split_data(data, attribute_index, threshold)
     left_entropy = calculate_entropy(left)
     right_entropy = calculate_entropy(right)
     parent_entropy = calculate_entropy(data)
     left_w = len(left)/len(data)
     right_w = len(right)/len(data)
-    weighted_entropy = left_w*left_entropy+right_w*right_entropy
-    information_gain = parent_entropy-weighted_entropy
+    weighted_entropy = left_w*left_entropy + right_w*right_entropy
+    information_gain = parent_entropy - weighted_entropy
     return information_gain
 
 
-def find_best_split(data):
-    best_gain = 0
+def calculate_gini_impurity(data):
+    labels = [row[1] for row in data]
+    label_count = {}
+
+    for label in labels:
+        if label not in label_count:
+            label_count[label] = 1
+        else:
+            label_count[label] += 1
+
+    total_samples = len(data)
+    gini = 1.0
+    for count in label_count.values():
+        probability = count / total_samples
+        gini -= probability ** 2
+    return gini
+
+
+def calculate_gini_gain(data, attribute_index, threshold):
+    left, right = split_data(data, attribute_index, threshold)
+    left_gini = calculate_gini_impurity(left)
+    right_gini = calculate_gini_impurity(right)
+    parent_gini = calculate_gini_impurity(data)
+    left_w = len(left) / len(data)
+    right_w = len(right) / len(data)
+    weighted_gini = left_w * left_gini + right_w * right_gini
+    gini_gain = parent_gini - weighted_gini
+    return gini_gain
+
+
+def find_best_split(data, criterion="entropy"):
+    # Initialize with negative infinity to ensure any score is better.
+    best_score = -float('inf')
     best_attribute = None
     best_threshold = None
     n_features = len(data[0][0])
@@ -92,16 +123,22 @@ def find_best_split(data):
     for attribute_index in range(n_features):
         values = set([row[0][attribute_index] for row in data])
         for threshold in values:
-            gain = calculate_information_gain(
-                data, attribute_index, threshold)
-            if gain > best_gain:
-                best_gain = gain
+            if criterion == "entropy":
+                score = calculate_information_gain(
+                    data, attribute_index, threshold)
+            elif criterion == "gini":
+                score = calculate_gini_gain(data, attribute_index, threshold)
+            else:
+                raise ValueError("Criterion must be 'entropy' or 'gini'")
+
+            if score > best_score:
+                best_score = score
                 best_attribute = attribute_index
                 best_threshold = threshold
-    return best_attribute, best_gain, best_threshold
+    return best_attribute, best_score, best_threshold
 
 
-def build_decision_tree(data, depth=0):
+def build_decision_tree(data, criterion="entropy", depth=0):
     labels = [row[1] for row in data]
 
     if len(set(labels)) == 1:
@@ -110,9 +147,10 @@ def build_decision_tree(data, depth=0):
     if not data:
         return None
 
-    best_attribute, best_gain, best_threshold = find_best_split(data)
+    best_attribute, best_score, best_threshold = find_best_split(
+        data, criterion)
 
-    if best_gain == 0:
+    if best_score == 0:
         label_count = {}
         for label in labels:
             if label not in label_count:
@@ -129,8 +167,8 @@ def build_decision_tree(data, depth=0):
         return DecisionTreeNode(label=most_common_label)
 
     left_data, right_data = split_data(data, best_attribute, best_threshold)
-    left_subtree = build_decision_tree(left_data, depth+1)
-    right_subtree = build_decision_tree(right_data, depth+1)
+    left_subtree = build_decision_tree(left_data, criterion, depth + 1)
+    right_subtree = build_decision_tree(right_data, criterion, depth + 1)
 
     return DecisionTreeNode(attribute_index=best_attribute, threshold=best_threshold, left=left_subtree, right=right_subtree)
 
@@ -156,7 +194,7 @@ def evaluate_model(tree, test_data):
     return precision, recall, f1
 
 
-def cross_validate(data, k):
+def cross_validate(data, k, criterion="entropy"):
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
     f1_scores = []
 
@@ -164,14 +202,14 @@ def cross_validate(data, k):
         train_data = [data[i] for i in train_index]
         test_data = [data[i] for i in test_index]
 
-        decision_tree = build_decision_tree(train_data)
+        decision_tree = build_decision_tree(train_data, criterion)
 
         precision, recall, f1 = evaluate_model(decision_tree, test_data)
         print(
             f"precision: {precision*100:.2f}%, recall: {recall*100:.2f}%, f1: {f1*100:.2f}%")
         f1_scores.append(f1)
 
-    avg_f1 = sum(f1_scores)/len(f1_scores)
+    avg_f1 = sum(f1_scores) / len(f1_scores)
     print(f"Average F1 score: {avg_f1*100:.2f}%")
 
 
@@ -193,7 +231,8 @@ def print_tree(node, depth=0):
 
 def main():
     dataset = load_data()
-    cross_validate(dataset, 5)
+    # Choose "gini" or "entropy"
+    cross_validate(dataset, 5, criterion="entropy")
 
 
 if __name__ == "__main__":
