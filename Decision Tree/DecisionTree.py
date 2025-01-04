@@ -1,5 +1,6 @@
 import math
 from sklearn.model_selection import KFold
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 label_map = {
     'Iris-setosa': 0,
@@ -145,13 +146,33 @@ def predict(tree, sample):
 
 
 def evaluate_model(tree, test_data):
-    correct = 0
-    for sample, label in test_data:
-        predict_label = predict(tree, sample)
-        if predict_label == label:
-            correct += 1
-    accuracy = correct/len(test_data)
-    return accuracy
+    true_labels = [label for _, label in test_data]
+    predicted_labels = [predict(tree, sample) for sample, _ in test_data]
+
+    precision = precision_score(true_labels, predicted_labels, average="macro")
+    recall = recall_score(true_labels, predicted_labels, average="macro")
+    f1 = f1_score(true_labels, predicted_labels, average="macro")
+
+    return precision, recall, f1
+
+
+def cross_validate(data, k):
+    kf = KFold(n_splits=k, shuffle=True, random_state=42)
+    f1_scores = []
+
+    for train_index, test_index in kf.split(data):
+        train_data = [data[i] for i in train_index]
+        test_data = [data[i] for i in test_index]
+
+        decision_tree = build_decision_tree(train_data)
+
+        precision, recall, f1 = evaluate_model(decision_tree, test_data)
+        print(
+            f"precision: {precision*100:.2f}%, recall: {recall*100:.2f}%, f1: {f1*100:.2f}%")
+        f1_scores.append(f1)
+
+    avg_f1 = sum(f1_scores)/len(f1_scores)
+    print(f"Average F1 score: {avg_f1*100:.2f}%")
 
 
 def print_tree(node, depth=0):
@@ -168,24 +189,6 @@ def print_tree(node, depth=0):
         print_tree(node.left, depth+1)
         print(" "*depth+"Right:")
         print_tree(node.right, depth+1)
-
-
-def cross_validate(data, k):
-    kf = KFold(n_splits=k, shuffle=True, random_state=42)
-    accuracies = []
-
-    for train_index, test_index in kf.split(data):
-        train_data = [data[i] for i in train_index]
-        test_data = [data[i] for i in test_index]
-
-        decision_tree = build_decision_tree(train_data)
-        # print_tree(decision_tree)
-        accuracy = evaluate_model(decision_tree, test_data)
-        print(f"accuracy: {accuracy*100:.2f}%")
-        accuracies.append(accuracy)
-
-    avg_accuracy = sum(accuracies)/len(accuracies)
-    print(f"average accuracy: {avg_accuracy*100:.2f}%")
 
 
 def main():
