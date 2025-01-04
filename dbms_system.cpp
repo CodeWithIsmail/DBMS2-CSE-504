@@ -63,17 +63,16 @@ void undo_redo_find()
 }
 void valueUpdate()
 {
-    map<string,bool>chek;
+    map<string, bool> chek;
     for (auto x : done)
         finalValue[mp[x][0]] = mp[x][2];
     for (auto x : values)
     {
-         finalValue[mp[x][0]] = mp[x][1];
-         cout<<x<<" ";
-         chek[]
-         
+        finalValue[mp[x][0]] = mp[x][1];
+        cout << x << " ";
+        chek[]
     }
-       
+
     for (auto x : redo)
         finalValue[mp[x][0]] = mp[x][2];
 }
