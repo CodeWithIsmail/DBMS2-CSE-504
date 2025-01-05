@@ -1,5 +1,7 @@
 import math
 import random
+import numpy as np
+from statistics import mean
 from sklearn.model_selection import KFold
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -220,6 +222,7 @@ def cross_validate(data, k, criterion="entropy"):
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
     f1_scores = []
     f2_scores = []
+    d2h_scores = []
 
     for train_index, test_index in kf.split(data):
         train_data = [data[i] for i in train_index]
@@ -233,10 +236,16 @@ def cross_validate(data, k, criterion="entropy"):
         f1_scores.append(f1)
         f2_scores.append(f2)
 
+        d2h = np.sqrt((1 - precision)**2 + (1 - recall)**2)
+        d2h_scores.append(d2h)
+
     avg_f1 = sum(f1_scores) / len(f1_scores)
     avg_f2 = sum(f2_scores) / len(f2_scores)
+    avg_d2h = mean(d2h_scores)
+
     print(f"Average F1 score: {avg_f1*100:.2f}%")
     print(f"Average F2 score: {avg_f2*100:.2f}%")
+    print(f"Average d2h score: {round(avg_d2h,3)}")
 
 
 def print_tree(node, depth=0):
