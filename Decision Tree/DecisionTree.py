@@ -1,4 +1,5 @@
 import math
+import random
 from sklearn.model_selection import KFold
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -21,7 +22,7 @@ attribute_map = {
 
 
 class DecisionTreeNode:
-    def __init__(self, attribute_index=None, threshold=None, label=None,  left=None, right=None):
+    def __init__(self, attribute_index=None, threshold=None, label=None, left=None, right=None):
         self.attribute_index = attribute_index
         self.threshold = threshold
         self.label = label
@@ -50,7 +51,6 @@ def split_data(data, attribute_index, threshold):
             left.append(row)
         else:
             right.append(row)
-
     return left, right
 
 
@@ -114,7 +114,6 @@ def calculate_gini_gain(data, attribute_index, threshold):
 
 
 def find_best_split(data, criterion="entropy"):
-    # Initialize with negative infinity to ensure any score is better.
     best_score = -float('inf')
     best_attribute = None
     best_threshold = None
@@ -183,6 +182,12 @@ def predict(tree, sample):
         return predict(tree.right, sample)
 
 
+def f2_score(precision, recall):
+    if precision + recall == 0:
+        return 0
+    return (5 * precision * recall) / (4 * precision + recall)
+
+
 def evaluate_model(tree, test_data):
     true_labels = [label for _, label in test_data]
     predicted_labels = [predict(tree, sample) for sample, _ in test_data]
@@ -190,13 +195,15 @@ def evaluate_model(tree, test_data):
     precision = precision_score(true_labels, predicted_labels, average="macro")
     recall = recall_score(true_labels, predicted_labels, average="macro")
     f1 = f1_score(true_labels, predicted_labels, average="macro")
+    f2 = f2_score(precision, recall)
 
-    return precision, recall, f1
+    return precision, recall, f1, f2
 
 
 def cross_validate(data, k, criterion="entropy"):
     kf = KFold(n_splits=k, shuffle=True, random_state=42)
     f1_scores = []
+    f2_scores = []
 
     for train_index, test_index in kf.split(data):
         train_data = [data[i] for i in train_index]
@@ -204,13 +211,16 @@ def cross_validate(data, k, criterion="entropy"):
 
         decision_tree = build_decision_tree(train_data, criterion)
 
-        precision, recall, f1 = evaluate_model(decision_tree, test_data)
+        precision, recall, f1, f2 = evaluate_model(decision_tree, test_data)
         print(
-            f"precision: {precision*100:.2f}%, recall: {recall*100:.2f}%, f1: {f1*100:.2f}%")
+            f"precision: {precision*100:.2f}%, recall: {recall*100:.2f}%, f1: {f1*100:.2f}%, f2: {f2*100:.2f}%")
         f1_scores.append(f1)
+        f2_scores.append(f2)
 
     avg_f1 = sum(f1_scores) / len(f1_scores)
+    avg_f2 = sum(f2_scores) / len(f2_scores)
     print(f"Average F1 score: {avg_f1*100:.2f}%")
+    print(f"Average F2 score: {avg_f2*100:.2f}%")
 
 
 def print_tree(node, depth=0):
@@ -231,8 +241,9 @@ def print_tree(node, depth=0):
 
 def main():
     dataset = load_data()
-    # Choose "gini" or "entropy"
-    cross_validate(dataset, 5, criterion="entropy")
+    criterion = input("Enter the criterion (entropy or gini): ")
+    random.shuffle(dataset)
+    cross_validate(dataset, 5, criterion=criterion)
 
 
 if __name__ == "__main__":
