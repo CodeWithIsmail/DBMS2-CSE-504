@@ -137,7 +137,7 @@ def find_best_split(data, criterion="entropy"):
     return best_attribute, best_score, best_threshold
 
 
-def build_decision_tree(data, criterion="entropy", depth=0):
+def build_decision_tree(data, criterion="entropy", depth=0, max_depth=5):
     labels = [row[1] for row in data]
 
     if len(set(labels)) == 1:
@@ -145,6 +145,22 @@ def build_decision_tree(data, criterion="entropy", depth=0):
 
     if not data:
         return None
+
+    if max_depth is not None and depth >= max_depth:
+        label_count = {}
+        for label in labels:
+            if label not in label_count:
+                label_count[label] = 1
+            else:
+                label_count[label] += 1
+
+        most_common_label = None
+        most_common_count = -1
+        for label, count in label_count.items():
+            if count > most_common_count:
+                most_common_count = count
+                most_common_label = label
+        return DecisionTreeNode(label=most_common_label)
 
     best_attribute, best_score, best_threshold = find_best_split(
         data, criterion)
@@ -209,7 +225,7 @@ def cross_validate(data, k, criterion="entropy"):
         train_data = [data[i] for i in train_index]
         test_data = [data[i] for i in test_index]
 
-        decision_tree = build_decision_tree(train_data, criterion)
+        decision_tree = build_decision_tree(train_data, criterion, max_depth=5)
 
         precision, recall, f1, f2 = evaluate_model(decision_tree, test_data)
         print(
