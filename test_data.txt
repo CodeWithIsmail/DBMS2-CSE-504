@@ -1,0 +1,3 @@
+Humidity,Air,Season,Temperature
+Low,Weak,Summer,Hot
+High,Strong,Spring,Cool
