@@ -42,8 +42,8 @@ p_ns = total_non_skin_count/total_image
 for r in range(256):
     for g in range(256):
         for b in range(256):
-            prob_skin = skin_rgb[r, g, b]/total_skin_count
-            prob_non_skin = non_skin_rgb[r, g, b]/total_non_skin_count
+            prob_skin = skin_rgb[r, g, b]/total_skin_count   # p(c|s)
+            prob_non_skin = non_skin_rgb[r, g, b]/total_non_skin_count  # p(c|ns)
 
             if non_skin_rgb[r, g, b] != 0:
                 threashlod = (prob_skin*p_s)/(prob_non_skin*p_ns)

@@ -3,7 +3,7 @@ import math
 import numpy as np
 import cv2
 
-NO_OF_CLUSTER = 5
+NO_OF_CLUSTER = 3
 MAX_ITER = 10
 CLUSTER = []
 for i in range(NO_OF_CLUSTER):

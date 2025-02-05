@@ -12,7 +12,7 @@ class KDTreeNode:
 
 def load_data():
     data = []
-    with open("points.txt", "r") as file:
+    with open("input.txt", "r") as file:
         for line in file:
             if line.strip():
                 line = line.strip()

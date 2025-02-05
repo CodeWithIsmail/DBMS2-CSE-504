@@ -2,8 +2,8 @@ import numpy as np
 import imageio
 import matplotlib.pyplot as plt
 
-input_image = "testing/original4.jpg"
-output_image = "testing/masked.jpeg"
+input_image = "testing/images.jpg"
+output_image = "testing/masked.jpg"
 fp = open('train_result.txt', "r")
 
 trained_prob= np.zeros(shape=(256, 256, 256))
@@ -18,7 +18,7 @@ for r in range(256):
 
 
 height, width, _ = test_image.shape
-T = 0.4
+T =0.15
 
 for x in range(height):
     for y in range(width):

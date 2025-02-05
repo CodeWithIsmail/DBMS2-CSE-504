@@ -154,7 +154,7 @@ int main()
     double bestDist = DBL_MAX;
     nearestNeighbor(root, target, 0, k, best, bestDist);
 
-    cout << "\nNearest Neighbor to (10,7): ";
+    cout << "\nNearest Neighbor to (10, 4, 7): ";
     for (double coord : best->coords)
         cout << coord << " ";
     cout << "\n";
